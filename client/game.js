@@ -26,8 +26,7 @@ class Game {
         this.isRunning = true;
         this.animationId = null;
         
-        // ДЛЯ ПАДАЮЩЕГО ГРУЗА
-        this.fallingHead = null;      // {x, y}
+        this.fallingHead = null;
         this.fallingVelocityY = 0;
         this.fallingVelocityX = 0;
         this.isFalling = false;
@@ -38,6 +37,59 @@ class Game {
         this.setupControls();
         this.setupGameOverButtons();
         this.gameLoop();
+    }
+    
+    // ===== РАНДОМНАЯ ГЕНЕРАЦИЯ БЛОКОВ =====
+    initBlocks() {
+        this.blocks = [];
+        
+        const count = 6 + Math.floor(Math.random() * 5); // 6-10 блоков
+        const minSize = 40;
+        const maxSize = 80;
+        const padding = 20;
+        const maxAttempts = 100;
+        
+        for (let i = 0; i < count; i++) {
+            const w = minSize + Math.random() * (maxSize - minSize);
+            const h = minSize + Math.random() * (maxSize - minSize);
+            
+            let x, y;
+            let attempts = 0;
+            let found = false;
+            
+            while (!found && attempts < maxAttempts) {
+                x = padding + Math.random() * (this.WIDTH - w - padding * 2);
+                y = 100 + Math.random() * (this.HEIGHT - h - 120);
+                found = true;
+                
+                for (let block of this.blocks) {
+                    if (x < block.x + block.w + 10 &&
+                        x + w + 10 > block.x &&
+                        y < block.y + block.h + 10 &&
+                        y + h + 10 > block.y) {
+                        found = false;
+                        break;
+                    }
+                }
+                attempts++;
+            }
+            
+            const hp = 2 + Math.floor(Math.random() * 3);
+            const colors = ['#ff6b6b', '#ffd93d', '#6bcbff', '#a29bfe', '#fd79a8', '#00b894', '#ff9f43', '#00cec9'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            
+            this.blocks.push({
+                x: x,
+                y: y,
+                w: w,
+                h: h,
+                hp: hp,
+                maxHp: hp,
+                color: color
+            });
+        }
+        
+        console.log(`📦 Создано ${this.blocks.length} блоков в случайных местах`);
     }
     
     showGameOver(reason = 'Игра окончена!') {
@@ -114,32 +166,6 @@ class Game {
         this.gameLoop();
     }
     
-    initBlocks() {
-        this.blocks = [];
-        const blockData = [
-            { x: 50, y: 250, w: 70, h: 50 },
-            { x: 150, y: 230, w: 80, h: 55 },
-            { x: 280, y: 250, w: 60, h: 50 },
-            { x: 380, y: 220, w: 75, h: 60 },
-            { x: 80, y: 380, w: 90, h: 45 },
-            { x: 250, y: 370, w: 70, h: 55 },
-            { x: 380, y: 380, w: 80, h: 50 },
-            { x: 160, y: 480, w: 65, h: 50 }
-        ];
-        
-        for (let data of blockData) {
-            this.blocks.push({
-                x: data.x,
-                y: data.y,
-                w: data.w,
-                h: data.h,
-                hp: 3,
-                maxHp: 3,
-                color: '#ff6b6b'
-            });
-        }
-    }
-    
     checkCollisions() {
         if (this.isFalling) return;
         
@@ -161,9 +187,10 @@ class Game {
                 head.x += (head.x - centerX) * 0.5;
                 head.y += (head.y - centerY) * 0.5;
                 
-                if (block.hp === 2) block.color = '#ffd93d';
-                else if (block.hp === 1) block.color = '#6bcbff';
-                else if (block.hp === 0) {
+                // Меняем цвет при повреждении
+                if (block.hp === 1) {
+                    block.color = '#6bcbff';
+                } else if (block.hp === 0) {
                     block.color = '#4a4a4a';
                     this.destroyedBlocks++;
                     this.destroyedElement.textContent = this.destroyedBlocks;
@@ -204,6 +231,7 @@ class Game {
         }
         
         if (allDestroyed && this.blocks.length > 0) {
+            console.log('🔄 Все блоки разрушены! Создаем новые...');
             setTimeout(() => {
                 this.initBlocks();
             }, 1000);
@@ -237,30 +265,24 @@ class Game {
     gameLoop() {
         if (!this.isRunning) return;
         
-        // === Если груз падает ===
         if (this.isFalling) {
-            // Обновляем физику падения
             this.fallingVelocityY += 0.8;
             this.fallingHead.x += this.fallingVelocityX;
             this.fallingHead.y += this.fallingVelocityY;
             
-            // Проверяем время падения
             const elapsed = (Date.now() - this.fallStartTime) / 1000;
             
-            // Если упал за экран или прошло 2 секунды
             if (this.fallingHead.y > this.HEIGHT + 100) {
                 this.showGameOver('Груз упал!');
             } else if (elapsed > 2.0 && !this.isGameOverShown) {
                 this.showGameOver('Цепь порвалась!');
             }
             
-            // Рисуем всё
             this.render();
             this.animationId = requestAnimationFrame(() => this.gameLoop());
             return;
         }
         
-        // === Нормальный игровой цикл ===
         this.physics.update();
         
         const head = this.physics.getHead();
@@ -271,11 +293,9 @@ class Game {
             const dy = head.y - anchor.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
-            // === РАЗРЫВ ЦЕПИ ===
             if (distance > 400 && this.isRunning && !this.isFalling) {
                 console.log('💥 РАЗРЫВ! distance:', distance);
                 
-                // Сохраняем позицию груза
                 this.fallingHead = {
                     x: head.x,
                     y: head.y
@@ -286,7 +306,6 @@ class Game {
                 this.isFalling = true;
                 this.fallStartTime = Date.now();
                 
-                // Удаляем груз из цепи
                 this.physics.points.pop();
                 
                 this.render();
@@ -294,7 +313,6 @@ class Game {
                 return;
             }
             
-            // Груз упал ниже экрана
             if (head.y > this.HEIGHT + 50 && this.isRunning) {
                 this.showGameOver('Груз упал!');
                 return;
@@ -308,12 +326,11 @@ class Game {
         this.animationId = requestAnimationFrame(() => this.gameLoop());
     }
     
-    // ===== ОТРИСОВКА =====
     render() {
         const ctx = this.ctx;
         ctx.clearRect(0, 0, this.WIDTH, this.HEIGHT);
         
-        // === БЛОКИ ===
+        // БЛОКИ
         for (let block of this.blocks) {
             if (block.hp > 0) {
                 ctx.fillStyle = block.color;
@@ -340,7 +357,7 @@ class Game {
         
         const points = this.physics.getPoints();
         
-        // === ЦЕПЬ ===
+        // ЦЕПЬ
         if (points.length > 1) {
             ctx.beginPath();
             ctx.moveTo(points[0].x, points[0].y);
@@ -355,7 +372,7 @@ class Game {
             ctx.shadowBlur = 0;
         }
         
-        // === ТОЧКА КРЕПЛЕНИЯ ===
+        // ТОЧКА КРЕПЛЕНИЯ
         if (points.length > 0) {
             ctx.beginPath();
             ctx.arc(points[0].x, points[0].y, 8, 0, Math.PI * 2);
@@ -366,11 +383,10 @@ class Game {
             ctx.stroke();
         }
         
-        // === ГРУЗ (если он есть в цепи) ===
+        // ГРУЗ В ЦЕПИ
         if (!this.isFalling && points.length > 1) {
             const head = points[points.length - 1];
             
-            // Свечение
             const gradient = ctx.createRadialGradient(head.x, head.y, 2, head.x, head.y, 25);
             gradient.addColorStop(0, 'rgba(255,217,61,0.8)');
             gradient.addColorStop(1, 'rgba(255,217,61,0)');
@@ -379,7 +395,6 @@ class Game {
             ctx.arc(head.x, head.y, 25, 0, Math.PI * 2);
             ctx.fill();
             
-            // Шар
             ctx.beginPath();
             ctx.arc(head.x, head.y, 14, 0, Math.PI * 2);
             ctx.fillStyle = '#ffd93d';
@@ -389,11 +404,10 @@ class Game {
             ctx.stroke();
         }
         
-        // === ПАДАЮЩИЙ ГРУЗ ===
+        // ПАДАЮЩИЙ ГРУЗ
         if (this.isFalling && this.fallingHead) {
             const fh = this.fallingHead;
             
-            // Большое красное свечение
             const glow = ctx.createRadialGradient(fh.x, fh.y, 5, fh.x, fh.y, 60);
             glow.addColorStop(0, 'rgba(255, 50, 0, 0.9)');
             glow.addColorStop(0.3, 'rgba(255, 0, 0, 0.6)');
@@ -403,7 +417,6 @@ class Game {
             ctx.arc(fh.x, fh.y, 60, 0, Math.PI * 2);
             ctx.fill();
             
-            // Красный шар
             const ballGrad = ctx.createRadialGradient(fh.x - 5, fh.y - 5, 3, fh.x, fh.y, 18);
             ballGrad.addColorStop(0, '#ff6b35');
             ballGrad.addColorStop(0.5, '#ff2200');
@@ -420,7 +433,6 @@ class Game {
             ctx.stroke();
             ctx.shadowBlur = 0;
             
-            // Огненные искры вокруг
             const time = Date.now() / 200;
             for (let i = 0; i < 12; i++) {
                 const angle = (i / 12) * Math.PI * 2 + time;
@@ -434,7 +446,6 @@ class Game {
                 ctx.fill();
             }
             
-            // Текст 💥
             ctx.fillStyle = 'white';
             ctx.font = 'bold 28px Arial';
             ctx.textAlign = 'center';
@@ -444,7 +455,6 @@ class Game {
             ctx.fillText('💥', fh.x, fh.y - 2);
             ctx.shadowBlur = 0;
             
-            // Оборванная цепь (пунктир)
             if (points.length > 0) {
                 const last = points[points.length - 1];
                 ctx.beginPath();
