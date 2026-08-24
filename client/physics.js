@@ -7,8 +7,8 @@ class Physics {
         this.WIDTH = canvasWidth;
         this.HEIGHT = canvasHeight;
         this.points = [];
-        this.NUM_POINTS = 14;
-        this.TARGET_DIST = 12;
+        this.NUM_POINTS = 12;
+        this.TARGET_DIST = 8;
         this.gravity = 0.6;
         this.stiffness = 0.95;
         this.mouseX = 250;

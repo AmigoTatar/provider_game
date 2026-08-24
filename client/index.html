@@ -33,10 +33,24 @@
                 </div>
             </div>
             <button id="backToMenu" class="back-btn">← Меню</button>
+            
+            <!-- ЭКРАН GAME OVER -->
+            <div id="gameOverScreen" style="display:none;">
+                <div class="game-over-overlay">
+                    <div class="game-over-box">
+                        <h2>💥 ИГРА ОКОНЧЕНА</h2>
+                        <div class="game-over-stats">
+                            <div>Счет: <span id="finalScore">0</span></div>
+                            <div>Разрушено: <span id="finalDestroyed">0</span></div>
+                        </div>
+                        <button id="restartBtn" class="game-over-btn primary">🔄 Попробовать снова</button>
+                        <button id="menuBtnGameOver" class="game-over-btn secondary">📋 В меню</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Подключаем файлы (ВАЖНО: physics.js и render.js должны быть ПЕРЕД game.js) -->
     <script src="physics.js"></script>
     <script src="render.js"></script>
     <script src="game.js"></script>
