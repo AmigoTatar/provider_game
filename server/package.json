@@ -1,7 +1,7 @@
 {
-  "name": "provodnik-server",
+  "name": "conductor-server",
   "version": "1.0.0",
-  "description": "Сервер для игры Проводник с физикой цепи",
+  "description": "Server for Conductor, a chain-physics game",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",

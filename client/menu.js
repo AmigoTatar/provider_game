@@ -4,101 +4,98 @@
 
 class Menu {
     constructor() {
-        console.log('📋 Инициализация меню...');
-        
         this.menuElement = document.getElementById('menu');
         this.gameContainer = document.getElementById('gameContainer');
         this.startBtn = document.getElementById('startBtn');
         this.highScoreElement = document.getElementById('highScore');
-        this.gameInstance = null;
-        
-        // Проверяем что все элементы найдены
-        if (!this.menuElement) console.error('❌ #menu не найден!');
-        if (!this.gameContainer) console.error('❌ #gameContainer не найден!');
-        if (!this.startBtn) console.error('❌ #startBtn не найден!');
-        
+        this.selectedLevel = 1;
+        this.gameInstance = new Game();
+        window.game = this.gameInstance;
+
         this.setupListeners();
         this.loadHighScore();
-        
-        console.log('✅ Меню инициализировано');
+        this.syncVolumeSliders();
     }
-    
+
     setupListeners() {
-        this.startBtn.addEventListener('click', () => {
-            console.log('🖱️ Клик по кнопке "Начать игру"');
-            this.startGame();
+        this.startBtn.addEventListener('click', (e) => {
+            if (window.audio) {
+                window.audio.ensure();
+                window.audio.play('click');
+            }
+            this.startGame(e);
         });
-        
-        const backBtn = document.getElementById('backToMenu');
-        if (backBtn) {
-            backBtn.addEventListener('click', () => {
-                console.log('🖱️ Клик "Назад в меню"');
-                this.goToMenu();
+
+        document.querySelectorAll('.level-btn').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                if (window.audio) window.audio.play('click');
+                this.selectedLevel = Number(btn.dataset.level);
+                document.querySelectorAll('.level-btn').forEach((el) => el.classList.remove('active'));
+                btn.classList.add('active');
             });
-        }
+        });
+
+        const master = document.getElementById('volMaster');
+        const sfx = document.getElementById('volSfx');
+        master.addEventListener('input', () => {
+            if (!window.audio) return;
+            window.audio.ensure();
+            window.audio.masterVolume = Number(master.value) / 100;
+            window.audio.save();
+        });
+        sfx.addEventListener('input', () => {
+            if (!window.audio) return;
+            window.audio.ensure();
+            window.audio.sfxVolume = Number(sfx.value) / 100;
+            window.audio.save();
+        });
+        master.addEventListener('change', () => {
+            if (window.audio) window.audio.play('click');
+        });
     }
-    
+
+    syncVolumeSliders() {
+        if (!window.audio) return;
+        document.getElementById('volMaster').value = Math.round(window.audio.masterVolume * 100);
+        document.getElementById('volSfx').value = Math.round(window.audio.sfxVolume * 100);
+    }
+
     goToMenu() {
-        // Останавливаем игру
-        if (this.gameInstance) {
-            this.gameInstance.pause();
-        }
-        // Показываем меню
+        if (this.gameInstance) this.gameInstance.stop();
         this.showMenu();
     }
-    
+
     showMenu() {
+        this.menuElement.classList.add('visible');
         this.menuElement.style.display = 'flex';
         this.gameContainer.style.display = 'none';
-        console.log('📋 Показано меню');
-        // Обновляем рекорд
+        this.gameContainer.classList.remove('visible');
         this.loadHighScore();
     }
-    
+
     hideMenu() {
         this.menuElement.style.display = 'none';
-        this.gameContainer.style.display = 'block';
-        console.log('🎮 Показана игра');
+        this.menuElement.classList.remove('visible');
+        this.gameContainer.style.display = 'flex';
+        this.gameContainer.classList.add('visible');
     }
-    
-    startGame() {
-        console.log('🚀 Запуск игры...');
-        
-        if (this.gameInstance) {
-            console.log('🔄 Возобновление существующей игры');
-            this.hideMenu();
-            this.gameInstance.resume();
-            return;
-        }
-        
-        try {
-            console.log('🆕 Создание новой игры...');
-            this.gameInstance = new Game();
-            window.game = this.gameInstance;
-            this.hideMenu();
-            console.log('✅ Игра создана успешно!');
-        } catch (error) {
-            console.error('❌ Ошибка при создании игры:', error);
-        }
+
+    startGame(pointerEvent) {
+        this.hideMenu();
+        this.gameInstance.start(1, pointerEvent);
     }
-    
+
     async loadHighScore() {
         try {
             const response = await fetch('/api/score');
             const data = await response.json();
-            this.highScoreElement.textContent = `🏆 Рекорд: ${data.highScore || 0}`;
+            this.highScoreElement.textContent = `Рекорд: ${data.highScore || 0}`;
         } catch (error) {
-            console.log('⚠️ Не удалось загрузить рекорд');
-            this.highScoreElement.textContent = '🏆 Рекорд: 0';
+            this.highScoreElement.textContent = 'Рекорд: 0';
         }
     }
 }
 
-// ============================================
-// ЗАПУСК МЕНЮ
-// ============================================
 window.onload = () => {
-    console.log('🎮 Загрузка игры...');
     window.menu = new Menu();
-    console.log('✅ Меню загружено!');
 };

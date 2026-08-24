@@ -3,63 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Проводник</title>
+    <title>Conductor</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="app">
-        <!-- МЕНЮ -->
         <div id="menu">
-            <h1>⚡ ПРОВОДНИК</h1>
+            <div class="menu-bg" aria-hidden="true">
+                <span class="float-block b1"></span>
+                <span class="float-block b2"></span>
+                <span class="float-block b3"></span>
+                <span class="float-block b4"></span>
+                <span class="float-block b5"></span>
+            </div>
+
+            <h1>CONDUCTOR</h1>
             <p class="subtitle">Управляй точкой крепления,<br>чтобы разрушать блоки</p>
-            
-            <button id="startBtn" class="main-btn">▶ Начать игру</button>
-            
-            <div id="highScore">🏆 Рекорд: 0</div>
-            
+
+            <button id="startBtn" class="main-btn">Начать медитацию</button>
+            <p class="hint">Волны идут без конца. Веди цепь плавно: резкие рывки, жёсткие удары и лёд её натягивают — пока не лопнет.</p>
+
+            <div id="highScore">Рекорд: 0</div>
+
+            <div class="settings">
+                <label>Общая громкость
+                    <input type="range" id="volMaster" min="0" max="100" value="70">
+                </label>
+                <label>Эффекты
+                    <input type="range" id="volSfx" min="0" max="100" value="85">
+                </label>
+            </div>
+
             <div class="controls-info">
-                <span>🖱️ Мышь</span>
-                <span>📱 Палец</span>
+                <span>Мышь</span>
+                <span>Палец</span>
+                <span>ESC — пауза</span>
             </div>
         </div>
-        
-        <!-- ИГРА -->
+
         <div id="gameContainer" style="display:none;">
             <canvas id="gameCanvas" width="500" height="600"></canvas>
-<div id="info">
-    <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap;">
-        <div>Счет: <span id="score">0</span></div>
-        <div>Уровень: <span id="level">1</span></div>
-        <div>⏱️ <span id="timer">0</span>с</div>
-    </div>
-    <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap; margin-top: 5px; font-size: 14px; color: #888;">
-        <div>Разрушено: <span id="destroyed">0</span></div>
-        <div>🔥 Комбо: <span id="combo">0</span></div>
-    </div>
-</div>
-            <button id="backToMenu" class="back-btn">← Меню</button>
-            
-            <!-- ЭКРАН GAME OVER -->
-            <div id="gameOverScreen" style="display:none;">
-                <div class="game-over-overlay">
-                    <div class="game-over-box">
-                        <h2>💥 ИГРА ОКОНЧЕНА</h2>
-                        <div class="game-over-stats">
-                            <div>Счет: <span id="finalScore">0</span></div>
-                            <div>Разрушено: <span id="finalDestroyed">0</span></div>
-                        </div>
-                        <button id="restartBtn" class="game-over-btn primary">🔄 Попробовать снова</button>
-                        <button id="menuBtnGameOver" class="game-over-btn secondary">📋 В меню</button>
+            <div id="info">
+                <div class="info-row">
+                    <div>Счет: <span id="score">0</span></div>
+                    <div>Волна: <span id="level">1</span> · <span id="waveName">Покой</span></div>
+                    <div><span id="timer">0</span>с</div>
+                </div>
+                <div class="info-row sub">
+                    <div>Разрушено: <span id="destroyed">0</span></div>
+                    <div>Комбо: <span id="combo">0</span></div>
+                </div>
+                <div class="tension-hud">
+                    <span id="tensionLabel">спокойна</span>
+                    <div class="tension-track"><div id="tensionFill"></div></div>
+                </div>
+            </div>
+            <button id="pauseBtn" class="icon-btn" title="Пауза">⏸</button>
+
+            <div id="pauseScreen" class="overlay-screen" aria-hidden="true">
+                <div class="overlay-backdrop"></div>
+                <div class="overlay-box">
+                    <h2>Пауза</h2>
+                    <button id="resumeBtn" class="game-over-btn primary">Продолжить</button>
+                    <button id="pauseRestartBtn" class="game-over-btn secondary">Заново</button>
+                    <button id="pauseMenuBtn" class="game-over-btn secondary">В меню</button>
+                </div>
+            </div>
+
+            <div id="levelCompleteScreen" class="overlay-screen" aria-hidden="true">
+                <div class="overlay-backdrop"></div>
+                <div class="overlay-box">
+                    <h2 id="levelCompleteTitle">Уровень пройден!</h2>
+                    <p id="levelCompleteText">Переход на следующий уровень</p>
+                    <button id="nextLevelBtn" class="game-over-btn primary">Дальше</button>
+                </div>
+            </div>
+
+            <div id="gameOverScreen" class="overlay-screen" aria-hidden="true">
+                <div class="overlay-backdrop"></div>
+                <div class="overlay-box">
+                    <h2 id="gameOverTitle">Игра окончена</h2>
+                    <div class="game-over-stats">
+                        <div>Счет: <span id="finalScore">0</span></div>
+                        <div>Разрушено: <span id="finalDestroyed">0</span></div>
+                        <div>Уровень: <span id="finalLevel">1</span></div>
+                        <div>Время: <span id="finalTime">0</span>с</div>
+                        <div>Макс. комбо: <span id="finalCombo">0</span></div>
                     </div>
+                    <button id="restartBtn" class="game-over-btn primary">Попробовать снова</button>
+                    <button id="menuBtnGameOver" class="game-over-btn secondary">В меню</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <div id="achievementToast"></div>
+
     <script src="physics.js"></script>
     <script src="render.js"></script>
+    <script src="audio.js"></script>
+    <script src="achievements.js"></script>
+    <script src="ui.js"></script>
     <script src="game.js"></script>
     <script src="menu.js"></script>
-    <script src="ui.js"></script>
 </body>
 </html>

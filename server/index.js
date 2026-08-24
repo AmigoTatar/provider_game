@@ -22,7 +22,10 @@ app.get('/api/score', (req, res) => {
 
 // Сохранение рекорда
 app.post('/api/score', (req, res) => {
-    const { score } = req.body;
+    const score = Number(req.body && req.body.score);
+    if (!Number.isFinite(score) || score < 0) {
+        return res.status(400).json({ success: false, error: 'invalid score' });
+    }
     const dbPath = path.join(__dirname, 'db.json');
     
     let data = { highScore: 0 };
