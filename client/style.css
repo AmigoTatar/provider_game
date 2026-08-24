@@ -1,0 +1,236 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #1a1a2e;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+}
+
+#app {
+    text-align: center;
+    color: white;
+    width: 100%;
+    max-width: 500px;
+}
+
+h1 {
+    color: #ff6b6b;
+    margin-bottom: 20px;
+    font-size: 36px;
+    text-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+}
+
+#gameCanvas {
+    background: #16213e;
+    border-radius: 12px;
+    display: block;
+    margin: 0 auto;
+    touch-action: none;
+    cursor: grab;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 500 / 600;
+}
+
+#info {
+    margin-top: 15px;
+    font-size: 18px;
+    color: #aaa;
+}
+
+#score {
+    color: #ffd93d;
+    font-weight: bold;
+    font-size: 24px;
+}
+
+#destroyed {
+    color: #6bcbff;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+/* Адаптация под мобильные */
+@media (max-width: 500px) {
+    h1 { font-size: 28px; }
+    #info { font-size: 16px; }
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #1a1a2e;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: 'Arial', sans-serif;
+    overflow: hidden;
+}
+
+#app {
+    width: 100%;
+    max-width: 500px;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+/* ===== МЕНЮ ===== */
+#menu {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    color: white;
+    text-align: center;
+    width: 100%;
+}
+
+#menu h1 {
+    font-size: 52px;
+    color: #ff6b6b;
+    text-shadow: 0 0 30px rgba(255, 107, 107, 0.4);
+    margin-bottom: 10px;
+}
+
+#menu .subtitle {
+    font-size: 18px;
+    color: #aaa;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+.main-btn {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    border: none;
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    padding: 18px 60px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px rgba(255, 107, 107, 0.4);
+    margin-bottom: 30px;
+}
+
+.main-btn:active {
+    transform: scale(0.95);
+}
+
+.main-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 30px rgba(255, 107, 107, 0.6);
+}
+
+#highScore {
+    font-size: 20px;
+    color: #ffd93d;
+    margin-bottom: 20px;
+}
+
+.controls-info {
+    display: flex;
+    gap: 20px;
+    color: #666;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+.controls-info span {
+    background: rgba(255,255,255,0.05);
+    padding: 5px 15px;
+    border-radius: 15px;
+}
+
+/* ===== ИГРА ===== */
+#gameContainer {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    position: relative;
+}
+
+#gameCanvas {
+    background: #16213e;
+    border-radius: 12px;
+    display: block;
+    touch-action: none;
+    cursor: grab;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 500 / 600;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+
+#info {
+    margin-top: 15px;
+    font-size: 18px;
+    color: #aaa;
+    width: 100%;
+    text-align: center;
+}
+
+#score {
+    color: #ffd93d;
+    font-weight: bold;
+    font-size: 28px;
+}
+
+#destroyed {
+    color: #6bcbff;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.back-btn {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.back-btn:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+/* ===== АДАПТАЦИЯ ===== */
+@media (max-width: 500px) {
+    #menu h1 { font-size: 36px; }
+    .main-btn { font-size: 20px; padding: 14px 40px; }
+    #info { font-size: 16px; }
+}
+
+@media (max-height: 700px) {
+    #menu h1 { font-size: 32px; }
+    #menu .subtitle { font-size: 14px; margin-bottom: 20px; }
+    .main-btn { font-size: 18px; padding: 12px 30px; }
+}

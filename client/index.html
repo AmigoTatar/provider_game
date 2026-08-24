@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Проводник</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- МЕНЮ -->
+        <div id="menu">
+            <h1>⚡ ПРОВОДНИК</h1>
+            <p class="subtitle">Управляй точкой крепления,<br>чтобы разрушать блоки</p>
+            
+            <button id="startBtn" class="main-btn">▶ Начать игру</button>
+            
+            <div id="highScore">🏆 Рекорд: 0</div>
+            
+            <div class="controls-info">
+                <span>🖱️ Мышь</span>
+                <span>📱 Палец</span>
+            </div>
+        </div>
+        
+        <!-- ИГРА -->
+        <div id="gameContainer" style="display:none;">
+            <canvas id="gameCanvas" width="500" height="600"></canvas>
+            <div id="info">
+                <div>Счет: <span id="score">0</span></div>
+                <div style="font-size: 14px; color: #888; margin-top: 5px;">
+                    Разрушено: <span id="destroyed">0</span>
+                </div>
+            </div>
+            <button id="backToMenu" class="back-btn">← Меню</button>
+        </div>
+    </div>
+
+    <!-- Подключаем файлы (ВАЖНО: physics.js и render.js должны быть ПЕРЕД game.js) -->
+    <script src="physics.js"></script>
+    <script src="render.js"></script>
+    <script src="game.js"></script>
+    <script src="menu.js"></script>
+    <script src="ui.js"></script>
+</body>
+</html>
