@@ -1,16 +1,15 @@
 {
-  "name": "server",
+  "name": "provodnik-server",
   "version": "1.0.0",
-  "description": "",
+  "description": "Сервер для игры Проводник с физикой цепи",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
     "dev": "nodemon index.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["game", "physics", "verlet", "canvas", "2d"],
+  "author": "Your Name",
+  "license": "MIT",
   "type": "commonjs",
   "dependencies": {
     "cors": "^2.8.6",

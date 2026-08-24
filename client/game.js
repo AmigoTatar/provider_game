@@ -8,6 +8,9 @@ class Game {
         this.ctx = this.canvas.getContext('2d');
         this.scoreElement = document.getElementById('score');
         this.destroyedElement = document.getElementById('destroyed');
+        this.levelElement = document.getElementById('level');
+        this.timerElement = document.getElementById('timer');
+        this.comboElement = document.getElementById('combo');
         
         this.gameOverScreen = document.getElementById('gameOverScreen');
         this.finalScore = document.getElementById('finalScore');
@@ -20,8 +23,16 @@ class Game {
         
         this.physics = new Physics(this.WIDTH, this.HEIGHT);
         
+        // ===== НОВЫЕ ПЕРЕМЕННЫЕ =====
         this.score = 0;
         this.destroyedBlocks = 0;
+        this.level = 1;
+        this.timer = 0;
+        this.combo = 0;
+        this.maxCombo = 0;
+        this.lastHitTime = 0;
+        this.comboTimeout = null;
+        this.timerInterval = null;
         this.blocks = [];
         this.isRunning = true;
         this.animationId = null;
@@ -36,14 +47,36 @@ class Game {
         this.initBlocks();
         this.setupControls();
         this.setupGameOverButtons();
+        this.startTimer();
         this.gameLoop();
+    }
+    
+    // ===== ТАЙМЕР =====
+    startTimer() {
+        this.timer = 0;
+        this.timerElement.textContent = '0';
+        
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+        }
+        
+        this.timerInterval = setInterval(() => {
+            if (this.isRunning) {
+                this.timer++;
+                this.timerElement.textContent = this.timer;
+            }
+        }, 1000);
     }
     
     // ===== РАНДОМНАЯ ГЕНЕРАЦИЯ БЛОКОВ =====
     initBlocks() {
         this.blocks = [];
         
-        const count = 6 + Math.floor(Math.random() * 5); // 6-10 блоков
+        // Количество блоков растет с уровнем
+        const baseCount = 6;
+        const extraPerLevel = Math.min(this.level - 1, 5); // максимум +5 блоков
+        const count = baseCount + extraPerLevel + Math.floor(Math.random() * 3);
+        
         const minSize = 40;
         const maxSize = 80;
         const padding = 20;
@@ -74,7 +107,11 @@ class Game {
                 attempts++;
             }
             
-            const hp = 2 + Math.floor(Math.random() * 3);
+            // HP растет с уровнем
+            let hp = 2 + Math.floor(Math.random() * 3);
+            if (this.level > 3) hp = 3 + Math.floor(Math.random() * 2);
+            if (this.level > 5) hp = 4 + Math.floor(Math.random() * 2);
+            
             const colors = ['#ff6b6b', '#ffd93d', '#6bcbff', '#a29bfe', '#fd79a8', '#00b894', '#ff9f43', '#00cec9'];
             const color = colors[Math.floor(Math.random() * colors.length)];
             
@@ -89,15 +126,66 @@ class Game {
             });
         }
         
-        console.log(`📦 Создано ${this.blocks.length} блоков в случайных местах`);
+        // Обновляем уровень в UI
+        this.levelElement.textContent = this.level;
+        
+        console.log(`📦 Уровень ${this.level}: ${this.blocks.length} блоков`);
     }
     
+    // ===== КОМБО =====
+    updateCombo() {
+        const now = Date.now();
+        
+        // Если прошло больше 2 секунд с последнего удара - сбрасываем комбо
+        if (now - this.lastHitTime > 2000) {
+            this.combo = 0;
+        }
+        
+        this.combo++;
+        this.lastHitTime = now;
+        
+        // Обновляем UI
+        this.comboElement.textContent = this.combo;
+        this.comboElement.className = '';
+        
+        // Анимация при комбо 3+
+        if (this.combo >= 3) {
+            this.comboElement.className = 'combo-active';
+            // Бонусные очки за комбо
+            const bonus = Math.floor(this.combo / 3) * 5;
+            if (bonus > 0) {
+                this.score += bonus;
+                this.scoreElement.textContent = this.score;
+                // Показываем бонус в консоли
+                console.log(`🔥 Комбо x${this.combo}! Бонус +${bonus}`);
+            }
+        }
+        
+        // Сбрасываем таймер сброса комбо
+        if (this.comboTimeout) {
+            clearTimeout(this.comboTimeout);
+        }
+        this.comboTimeout = setTimeout(() => {
+            if (this.combo > 0) {
+                console.log(`⏰ Комбо сброшен (${this.combo} ударов)`);
+                this.combo = 0;
+                this.comboElement.textContent = '0';
+                this.comboElement.className = '';
+            }
+        }, 2000);
+    }
+    
+    // ===== ОСТАЛЬНЫЕ МЕТОДЫ =====
     showGameOver(reason = 'Игра окончена!') {
         if (this.isGameOverShown) return;
         this.isGameOverShown = true;
         
         console.log(`💥 ${reason}`);
         this.isRunning = false;
+        
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+        }
         
         if (this.animationId) {
             cancelAnimationFrame(this.animationId);
@@ -112,6 +200,18 @@ class Game {
             title.textContent = '💥 ЦЕПЬ ПОРВАЛАСЬ!';
         } else {
             title.textContent = '💥 ИГРА ОКОНЧЕНА';
+        }
+        
+        // Добавляем статистику на экран Game Over
+        const statsDiv = this.gameOverScreen.querySelector('.game-over-stats');
+        if (statsDiv) {
+            statsDiv.innerHTML = `
+                <div>Счет: <span id="finalScore">${this.score}</span></div>
+                <div>Разрушено: <span id="finalDestroyed">${this.destroyedBlocks}</span></div>
+                <div>Уровень: <span style="color:#a29bfe;">${this.level}</span></div>
+                <div>Время: <span style="color:#00cec9;">${this.timer}с</span></div>
+                <div>Макс. комбо: <span style="color:#fd79a8;">${this.maxCombo}</span></div>
+            `;
         }
         
         setTimeout(() => {
@@ -138,6 +238,9 @@ class Game {
             this.fallingHead = null;
             this.isGameOverShown = false;
             this.isRunning = false;
+            if (this.timerInterval) {
+                clearInterval(this.timerInterval);
+            }
             if (window.menu) {
                 window.menu.showMenu();
             }
@@ -148,8 +251,18 @@ class Game {
         console.log('🔄 Перезапуск...');
         this.score = 0;
         this.destroyedBlocks = 0;
+        this.level = 1;
+        this.combo = 0;
+        this.maxCombo = 0;
+        this.lastHitTime = 0;
+        this.timer = 0;
+        
         this.scoreElement.textContent = '0';
         this.destroyedElement.textContent = '0';
+        this.levelElement.textContent = '1';
+        this.timerElement.textContent = '0';
+        this.comboElement.textContent = '0';
+        this.comboElement.className = '';
         
         this.isFalling = false;
         this.fallingHead = null;
@@ -163,6 +276,7 @@ class Game {
         
         this.initBlocks();
         this.isRunning = true;
+        this.startTimer();
         this.gameLoop();
     }
     
@@ -182,20 +296,31 @@ class Game {
                 this.score += 10;
                 this.scoreElement.textContent = this.score;
                 
+                // ОБНОВЛЯЕМ КОМБО
+                this.updateCombo();
+                
                 const centerX = block.x + block.w / 2;
                 const centerY = block.y + block.h / 2;
                 head.x += (head.x - centerX) * 0.5;
                 head.y += (head.y - centerY) * 0.5;
                 
-                // Меняем цвет при повреждении
                 if (block.hp === 1) {
                     block.color = '#6bcbff';
                 } else if (block.hp === 0) {
                     block.color = '#4a4a4a';
                     this.destroyedBlocks++;
                     this.destroyedElement.textContent = this.destroyedBlocks;
-                    this.score += 20;
+                    
+                    // Бонус за разрушение
+                    const bonus = 20 + Math.floor(this.combo / 2) * 5;
+                    this.score += bonus;
                     this.scoreElement.textContent = this.score;
+                    
+                    // Обновляем максимальное комбо
+                    if (this.combo > this.maxCombo) {
+                        this.maxCombo = this.combo;
+                    }
+                    
                     this.checkHighScore();
                 }
             }
@@ -231,7 +356,8 @@ class Game {
         }
         
         if (allDestroyed && this.blocks.length > 0) {
-            console.log('🔄 Все блоки разрушены! Создаем новые...');
+            console.log(`🔄 Все блоки разрушены! Переход на уровень ${this.level + 1}`);
+            this.level++;
             setTimeout(() => {
                 this.initBlocks();
             }, 1000);

@@ -26,12 +26,17 @@
         <!-- ИГРА -->
         <div id="gameContainer" style="display:none;">
             <canvas id="gameCanvas" width="500" height="600"></canvas>
-            <div id="info">
-                <div>Счет: <span id="score">0</span></div>
-                <div style="font-size: 14px; color: #888; margin-top: 5px;">
-                    Разрушено: <span id="destroyed">0</span>
-                </div>
-            </div>
+<div id="info">
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap;">
+        <div>Счет: <span id="score">0</span></div>
+        <div>Уровень: <span id="level">1</span></div>
+        <div>⏱️ <span id="timer">0</span>с</div>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap; margin-top: 5px; font-size: 14px; color: #888;">
+        <div>Разрушено: <span id="destroyed">0</span></div>
+        <div>🔥 Комбо: <span id="combo">0</span></div>
+    </div>
+</div>
             <button id="backToMenu" class="back-btn">← Меню</button>
             
             <!-- ЭКРАН GAME OVER -->
